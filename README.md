@@ -22,9 +22,9 @@ This is a CPU-based path tracer written in Python.
 
 - Add obj and mtl files to main/obj_files as the scene (**model must be triangulated**)
 - Configure camera positioning and rotation to your liking  
-- Edit path tracing settings in **settings.py**  
+- Edit path tracing settings in **src/settings.py**  
 - Run the file from the root directory (the parent of main/)
-- Run **run.py** where you can choose between render the scene or viewing a comparison slider
+- Run **src/run.py** with ***python -m src.run***
 
 ## IMPORTANT CONSIDERATIONS
 
