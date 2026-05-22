@@ -319,4 +319,4 @@ The Schlick approximation is a performant approximation of the Fresnel equations
 
 Here is a quick comparison of Fresnel vs. Schlick approximation graphs:
 
-![image](../main/matplotlib_plots/fresnel_schlick.png)
+![image](../matplotlib_plots/fresnel_schlick.png)
