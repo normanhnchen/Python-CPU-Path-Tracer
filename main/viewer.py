@@ -6,8 +6,11 @@ Displays a comparison slider between the original and denoised render outputs.
 
 
 import contextlib
+
+
 import main.ui as ui
 import main.settings as settings
+import main.paths as paths
 
 # Remove pygame message.
 with contextlib.redirect_stdout(None):
@@ -19,8 +22,8 @@ def view():
     
     WIDTH, HEIGHT = settings.screen_dimensions
 
-    original_render = pygame.image.load("main/saved_images/original_render.png")
-    denoised_render = pygame.image.load("main/saved_images/denoised_render.png")
+    original_render = pygame.image.load(str(paths.ORIGINAL_RENDER_PATH))
+    denoised_render = pygame.image.load(str(paths.DENOISED_RENDER_PATH))
 
     pygame.init()
     SCREEN = pygame.display.set_mode((WIDTH, HEIGHT))

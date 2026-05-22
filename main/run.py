@@ -5,6 +5,12 @@ Prompts the user to either render a new image or view/compare saved renders.
 """
 
 
+if __package__ in (None, ""):
+    import sys
+    from pathlib import Path
+
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 import main.renderer as renderer
 import main.viewer as viewer
 

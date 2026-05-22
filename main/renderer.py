@@ -16,6 +16,7 @@ from numba import prange
 from PIL import Image
 import threading
 
+
 # Remove pygame message.
 with contextlib.redirect_stdout(None):
     import pygame
@@ -25,6 +26,7 @@ from main.path_tracer import path_trace
 from main.denoiser import oidn_denoise
 import main.math_utils as math_utils
 import main.input_check as input_check
+import main.paths as paths
 
 
 WIDTH, HEIGHT = settings.screen_dimensions
@@ -81,7 +83,7 @@ sample_start_time = None
 
 
 @njit(cache=True)
-def screen_to_world(pixel):
+def screen_to_world(pixel, width, height, proj_dist, proj_half_width, proj_half_height):
     """
     Convert a screen-space pixel to world space through the projection plane.
 
@@ -105,16 +107,16 @@ def screen_to_world(pixel):
     """
 
     display_x, display_y = pixel
-    world_z = PROJ_DIST
+    world_z = proj_dist
 
     # Set the middle of the screen as the origin (0, 0).
-    screen_x = display_x - WIDTH / 2
-    screen_y = display_y - HEIGHT / 2
+    screen_x = display_x - width / 2
+    screen_y = display_y - height / 2
 
     # Calculate screen space position (from -1 to 1) then convert to world space.
-    world_x = screen_x / (WIDTH / 2) * PROJ_HALF_WIDTH
+    world_x = screen_x / (width / 2) * proj_half_width
     # Make y negative because y-direction in screen space is inverted.
-    world_y = -screen_y / (HEIGHT / 2) * PROJ_HALF_HEIGHT
+    world_y = -screen_y / (height / 2) * proj_half_height
 
     return math_utils.normalize(np.array((world_x, world_y, world_z)))
 
@@ -243,7 +245,19 @@ def aces_film(render):
 
 
 @njit(cache=True, parallel=True)
-def render_chunk(scene, chunk, ray_samples, bounces):
+def render_chunk(
+    scene,
+    chunk,
+    ray_samples,
+    bounces,
+    width,
+    height,
+    camera_world_pos,
+    camera_rotation,
+    proj_dist,
+    proj_half_width,
+    proj_half_height,
+):
     """
     Path trace a chunk of pixels.
 
@@ -267,14 +281,21 @@ def render_chunk(scene, chunk, ray_samples, bounces):
         Rendered chunk after path tracing, shape (width, height, 3).
     """
 
-    chunk_render = np.zeros((WIDTH, HEIGHT, 3))
-    
+    chunk_render = np.zeros((width, height, 3))
+
     for i in prange(len(chunk)):
         for _ in range(ray_samples):
             pixel = chunk[i]
-            ray_dir = screen_to_world(pixel + jitter())
-            ray_dir = rotate_direction(ray_dir, CAMERA_ROTATION)
-            color = path_trace(scene, CAMERA_WORLD_POS, ray_dir, bounces)
+            ray_dir = screen_to_world(
+                pixel + jitter(),
+                width,
+                height,
+                proj_dist,
+                proj_half_width,
+                proj_half_height,
+            )
+            ray_dir = rotate_direction(ray_dir, camera_rotation)
+            color = path_trace(scene, camera_world_pos, ray_dir, bounces)
             chunk_render[pixel[0], pixel[1]] += color
     
     return chunk_render
@@ -360,7 +381,19 @@ def render(scene):
         sample_start_time = time.perf_counter()
 
         for chunk in CHUNKS:
-            chunk_render = render_chunk(scene, chunk, RAY_SAMPLES, BOUNCES)
+            chunk_render = render_chunk(
+                scene,
+                chunk,
+                RAY_SAMPLES,
+                BOUNCES,
+                WIDTH,
+                HEIGHT,
+                CAMERA_WORLD_POS,
+                CAMERA_ROTATION,
+                PROJ_DIST,
+                PROJ_HALF_WIDTH,
+                PROJ_HALF_HEIGHT,
+            )
             return_render(chunk_render)
 
     print("\nTotal render time: {:.2f} seconds".format(time.perf_counter() - render_start_time))
@@ -381,11 +414,23 @@ def start():
     print("\n\nCompiling...")
 
     # Build the scene.
-    from scene_builder import scene as SCENE
+    from main.scene_builder import scene as SCENE
 
     # Force njit compilation of all njit functions with one call (if not stored with cache).
     compilation_chunk = np.array([[0, 0]])
-    render_chunk(SCENE, compilation_chunk, 1, 1)
+    render_chunk(
+        SCENE,
+        compilation_chunk,
+        1,
+        1,
+        WIDTH,
+        HEIGHT,
+        CAMERA_WORLD_POS,
+        CAMERA_ROTATION,
+        PROJ_DIST,
+        PROJ_HALF_WIDTH,
+        PROJ_HALF_HEIGHT,
+    )
 
     compilation_time = time.perf_counter() - compilation_start_time
     print("\nCompilation finished: {:.2f}s".format(compilation_time))
@@ -442,8 +487,9 @@ def start():
         original_render_image = Image.fromarray(np.swapaxes(original_render, 0, 1))
         denoised_render_image = Image.fromarray(np.swapaxes(denoised_render, 0, 1))
 
-        original_render_image.save("main/saved_images/original_render.png")
-        denoised_render_image.save("main/saved_images/denoised_render.png")
+        paths.SAVED_IMAGES_DIR.mkdir(exist_ok=True)
+        original_render_image.save(paths.ORIGINAL_RENDER_PATH)
+        denoised_render_image.save(paths.DENOISED_RENDER_PATH)
 
 if __name__ == "__main__":
     start()

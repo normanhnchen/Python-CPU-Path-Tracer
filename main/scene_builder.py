@@ -6,10 +6,11 @@ Note: model must be triangulated or else faces will not render.
 
 
 import numpy as np
-from pathlib import Path
 import numba
 from numba import njit
 from numba.experimental import jitclass
+
+import main.paths as paths
 
 
 material_spec = [
@@ -369,7 +370,7 @@ def parse_mtl(file_path, material_name):
     return Material(base_color, emissive_strength, roughness, metalness)
 
 
-obj_files_path = Path("main/obj_files")
+obj_files_path = paths.OBJ_FILES_DIR
 
 scene = []
 for obj_file in obj_files_path.iterdir():

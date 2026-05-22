@@ -1,4 +1,4 @@
-"""Check if the main.settings are invalid."""
+"""Check if the settings are invalid."""
 
 
 import main.settings as settings
