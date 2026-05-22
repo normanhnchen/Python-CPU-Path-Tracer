@@ -6,8 +6,8 @@ Displays a comparison slider between the original and denoised render outputs.
 
 
 import contextlib
-import ui
-import settings
+import main.ui as ui
+import main.settings as settings
 
 # Remove pygame message.
 with contextlib.redirect_stdout(None):

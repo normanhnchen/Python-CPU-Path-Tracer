@@ -5,8 +5,8 @@ Prompts the user to either render a new image or view/compare saved renders.
 """
 
 
-import renderer
-import viewer
+import main.renderer as renderer
+import main.viewer as viewer
 
 
 while True:

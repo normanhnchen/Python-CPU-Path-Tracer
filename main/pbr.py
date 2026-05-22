@@ -11,7 +11,7 @@ Refer to docs/pbr.md for more information
 import numpy as np
 from numba import njit
 
-import math_utils
+import main.math_utils as math_utils
 
 
 @njit(cache=True)

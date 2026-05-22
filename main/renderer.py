@@ -20,11 +20,11 @@ import threading
 with contextlib.redirect_stdout(None):
     import pygame
 
-import settings
-from path_tracer import path_trace
-from denoiser import oidn_denoise
-import math_utils
-import input_check
+import main.settings as settings
+from main.path_tracer import path_trace
+from main.denoiser import oidn_denoise
+import main.math_utils as math_utils
+import main.input_check as input_check
 
 
 WIDTH, HEIGHT = settings.screen_dimensions

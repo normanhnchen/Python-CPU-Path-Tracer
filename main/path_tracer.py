@@ -8,9 +8,9 @@ Includes intersection tests and the main path tracing loop.
 import numpy as np
 from numba import njit
 
-from pbr import calculate_pbr
-import math_utils
-import settings
+from main.pbr import calculate_pbr
+import main.math_utils as math_utils
+import main.settings as settings
 
 
 BACKGROUND_COLOR = np.array(settings.background_color)

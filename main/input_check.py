@@ -1,7 +1,7 @@
-"""Check if the settings are invalid."""
+"""Check if the main.settings are invalid."""
 
 
-import settings
+import main.settings as settings
 
 
 settings_error = "SETTINGS ERROR:"
